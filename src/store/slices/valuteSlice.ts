@@ -21,37 +21,26 @@ interface IValuteScheme {
 	}
 }
 
-const initialState: IValuteScheme | null = {
-	Date: "",
-	PreviousDate: "",
-	PreviousURL: "",
-	Timestamp: "",
-	Valute: {
-		AUD: {
-			ID: "",
-			NumCode: "",
-			CharCode: "",
-			Nominal: 1,
-			Name: "",
-			Value: 58.6865,
-			Previous: 58.3232,
-		},
-		AZN: {
-			ID: "R01020A",
-			NumCode: "944",
-			CharCode: "AZN",
-			Nominal: 1,
-			Name: "Азербайджанский манат",
-			Value: 52.1236,
-			Previous: 52.1791,
-		},
-	},
+const initialState: {
+	entities: IValuteScheme | null
+	loading: boolean
+	error: unknown
+} = {
+	entities: null,
+	loading: false,
+	error: null,
+}
+
+function delay(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export const getValute = createAsyncThunk("valute/getValute", async () => {
+	await delay(2000)
 	const response = await axios.get<IValuteScheme>(
 		"https://www.cbr-xml-daily.ru/daily_json.js"
 	)
+
 	return response.data
 })
 
@@ -60,10 +49,22 @@ export const valuteSlice = createSlice({
 	initialState,
 	reducers: {},
 	extraReducers: builder => {
-		builder.addCase(getValute.fulfilled, (state, { payload }) => {
-			state = payload
-			console.log(payload)
-		})
+		builder
+			.addCase(getValute.pending, state => {
+				state.loading = true
+			})
+			.addCase(getValute.fulfilled, (state, { payload }) => {
+				//setTimeout(() => {
+				//	state.entities = payload
+				//	state.loading = false
+				//}, 1000)
+				state.entities = payload
+				state.loading = false
+			})
+			.addCase(getValute.rejected, (state, { payload }) => {
+				state.error = payload
+				state.loading = false
+			})
 	},
 })
 
