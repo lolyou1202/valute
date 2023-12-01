@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from "axios"
 
-interface IValute {
+export interface IValute {
 	ID: string
 	NumCode: string
 	CharCode: string
@@ -11,18 +11,16 @@ interface IValute {
 	Previous: number
 }
 
-interface IValuteScheme {
+export interface IValuteScheme<T> {
 	Date: string
 	PreviousDate: string
 	PreviousURL: string
 	Timestamp: string
-	Valute: {
-		[keyValute: string]: IValute
-	}
+	Valute: T
 }
 
 const initialState: {
-	entities: IValuteScheme | null
+	entities: IValuteScheme<IValute[]> | null
 	loading: boolean
 	error: unknown
 } = {
@@ -31,15 +29,15 @@ const initialState: {
 	error: null,
 }
 
-function delay(ms: number) {
+const delay = (ms: number) => {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export const getValute = createAsyncThunk("valute/getValute", async () => {
 	await delay(2000)
-	const response = await axios.get<IValuteScheme>(
-		"https://www.cbr-xml-daily.ru/daily_json.js"
-	)
+	const response = await axios.get<
+		IValuteScheme<{ [keyValute: string]: IValute }>
+	>("https://www.cbr-xml-daily.ru/daily_json.js")
 
 	return response.data
 })
@@ -54,11 +52,8 @@ export const valuteSlice = createSlice({
 				state.loading = true
 			})
 			.addCase(getValute.fulfilled, (state, { payload }) => {
-				//setTimeout(() => {
-				//	state.entities = payload
-				//	state.loading = false
-				//}, 1000)
-				state.entities = payload
+				const updateValuteScheme = Object.values(payload.Valute)
+				state.entities = { ...payload, Valute: updateValuteScheme }
 				state.loading = false
 			})
 			.addCase(getValute.rejected, (state, { payload }) => {

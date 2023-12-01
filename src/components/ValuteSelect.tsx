@@ -4,9 +4,10 @@ import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import { FC, useState } from "react"
+import { IValute, IValuteScheme } from "../store/slices/valuteSlice"
 
 interface IValuteSelect {
-	selectData: []
+	selectData: IValuteScheme<IValute[]> | null
 }
 
 export const ValuteSelect: FC<IValuteSelect> = ({ selectData }) => {

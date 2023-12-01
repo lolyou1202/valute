@@ -6,15 +6,13 @@ import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import TableCell from "@mui/material/TableCell"
 import TableBody from "@mui/material/TableBody"
-//import { ValuteSelect } from "./components/valuteSelect"
+import { ValuteSelect } from "./components/ValuteSelect"
 import CircularProgress from "@mui/material/CircularProgress"
+import Backdrop from "@mui/material/Backdrop"
 
 function App() {
 	const dispatch = useAppDispatch()
-	const data = useAppSelector(store => store.valute)
-
-	//const keys = Object.keys(data)
-	//console.log(keys)
+	const {entities: valuteData, loading} = useAppSelector(store => store.valute)
 
 	useEffect(() => {
 		dispatch(getValute())
@@ -22,8 +20,12 @@ function App() {
 
 	return (
 		<div className='App'>
-			{data.loading && <CircularProgress />}
-			{/*<ValuteSelect/>*/}
+			<Backdrop
+				sx={{ color: "#fff", zIndex: theme => theme.zIndex.drawer + 1 }}
+				open={loading}>
+				<CircularProgress color='inherit' />
+			</Backdrop>
+			<ValuteSelect selectData={valuteData}/>
 			{/*<Table sx={{ minWidth: 650 }} aria-label='simple table'>
 				<TableHead>
 					<TableRow>
