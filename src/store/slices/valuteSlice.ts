@@ -18,7 +18,6 @@ export const getValute = createAsyncThunk("valute/getValute", async () => {
 	const response = await axios.get<
 		IValuteScheme<{ [keyValute: string]: IValute }>
 	>("https://www.cbr-xml-daily.ru/daily_json.js")
-
 	return response.data
 })
 
@@ -40,11 +39,11 @@ export const valuteSlice = createSlice({
 					(valute.Favorite = !valute.Favorite)
 			)
 		},
-		setData: (
-			state,
-			{ payload }: PayloadAction<IValuteScheme<IValute[]>>
-		) => {
-			state.valuteData = payload
+		setFavoritesFromLS: (state, { payload }: PayloadAction<string[]>) => {
+			state.valuteData?.Valute.map(
+				valute =>
+					payload.includes(valute.ID) && (valute.Favorite = true)
+			)
 		},
 	},
 	extraReducers: builder => {
@@ -53,13 +52,18 @@ export const valuteSlice = createSlice({
 				state.loading = true
 			})
 			.addCase(getValute.fulfilled, (state, { payload }) => {
+				console.log(payload)
+				const dataLS: string[] = JSON.parse(
+					localStorage.getItem("favoriteValute") || "[]"
+				)
+
 				let updateValute: IValute[] = []
 
 				for (let key in payload.Valute) {
 					updateValute.push({
 						...payload.Valute[key],
 						Current: false,
-						Favorite: false,
+						Favorite: dataLS.includes(payload.Valute[key].ID),
 					})
 				}
 
@@ -73,6 +77,7 @@ export const valuteSlice = createSlice({
 	},
 })
 
-export const { setCurrentValute, setFavoriteValute, setData } = valuteSlice.actions
+export const { setCurrentValute, setFavoriteValute, setFavoritesFromLS } =
+	valuteSlice.actions
 
 export const valuteReducer = valuteSlice.reducer

@@ -2,7 +2,6 @@ import { useEffect } from "react"
 import {
 	getValute,
 	setCurrentValute,
-	setData,
 	setFavoriteValute,
 } from "./store/slices/valuteSlice"
 import { useAppDispatch, useAppSelector } from "./store/reduxHooks"
@@ -38,16 +37,19 @@ function App() {
 	}
 
 	useEffect(() => {
-		const data = localStorage.getItem("state")
-		if (data) {
-			dispatch(setData(JSON.parse(data)))
-		} else {
-			dispatch(getValute())
-		}
+		dispatch(getValute())
 	}, [dispatch])
 
 	useEffect(() => {
-		localStorage.setItem("state", JSON.stringify(valuteData))
+		valuteData &&
+			localStorage.setItem(
+				"favoriteValute",
+				JSON.stringify(
+					valuteData.Valute.filter(valute => valute.Favorite).map(
+						valute => valute.ID
+					)
+				)
+			)
 	}, [valuteData])
 
 	return (
