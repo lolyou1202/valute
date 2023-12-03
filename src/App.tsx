@@ -1,18 +1,40 @@
-import { useEffect, useState } from "react"
-import { getValute } from "./store/slices/valuteSlice"
+import { useEffect } from "react"
+import {
+	getValute,
+	setCurrentValute,
+	setFavoriteValute,
+} from "./store/slices/valuteSlice"
 import { useAppDispatch, useAppSelector } from "./store/reduxHooks"
-import Table from "@mui/material/Table"
-import TableHead from "@mui/material/TableHead"
-import TableRow from "@mui/material/TableRow"
-import TableCell from "@mui/material/TableCell"
-import TableBody from "@mui/material/TableBody"
 import { ValuteSelect } from "./components/ValuteSelect"
 import CircularProgress from "@mui/material/CircularProgress"
 import Backdrop from "@mui/material/Backdrop"
+import { useCurrentValute } from "./hooks/useCurrentValute"
+import { ValuteTable } from "./components/ValuteTable"
+import { useSortByFavorites } from "./hooks/useSortByFavorites"
+import { useValuteNameArray } from "./hooks/useValuteNameArray"
+import { Typography } from "@mui/material"
+import { useGetDate } from "./hooks/useGetDate"
 
 function App() {
+	const { valuteData, loading } = useAppSelector(store => store.valute)
+
 	const dispatch = useAppDispatch()
-	const {entities: valuteData, loading} = useAppSelector(store => store.valute)
+	const currentValute = useCurrentValute()
+	const sortedValuteArray = useSortByFavorites()
+	const valuteNameArray = useValuteNameArray(sortedValuteArray)
+
+	const getDate = useGetDate({
+		rateDate: valuteData?.Date,
+		rateTimestamp: valuteData?.Timestamp,
+	})
+
+	const onChangeSelect = (value: string) => {
+		dispatch(setCurrentValute(value))
+	}
+
+	const onClickFavoriteCell = (ID: string) => {
+		dispatch(setFavoriteValute(ID))
+	}
 
 	useEffect(() => {
 		dispatch(getValute())
@@ -25,37 +47,22 @@ function App() {
 				open={loading}>
 				<CircularProgress color='inherit' />
 			</Backdrop>
-			<ValuteSelect selectData={valuteData}/>
-			{/*<Table sx={{ minWidth: 650 }} aria-label='simple table'>
-				<TableHead>
-					<TableRow>
-						<TableCell>Dessert (100g serving)</TableCell>
-						<TableCell align='right'>Calories</TableCell>
-						<TableCell align='right'>Fat&nbsp;(g)</TableCell>
-						<TableCell align='right'>Carbs&nbsp;(g)</TableCell>
-						<TableCell align='right'>Protein&nbsp;(g)</TableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{rows.map(row => (
-						<TableRow
-							key={row.name}
-							sx={{
-								"&:last-child td, &:last-child th": {
-									border: 0,
-								},
-							}}>
-							<TableCell component='th' scope='row'>
-								{row.name}
-							</TableCell>
-							<TableCell align='right'>{row.calories}</TableCell>
-							<TableCell align='right'>{row.fat}</TableCell>
-							<TableCell align='right'>{row.carbs}</TableCell>
-							<TableCell align='right'>{row.protein}</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>*/}
+			<ValuteSelect
+				currentValute={currentValute}
+				selectData={valuteNameArray}
+				onChangeSelect={onChangeSelect}
+			/>
+			<Typography variant='h5'>
+				Курсы валют ЦБ РФ на {getDate.dateString}
+			</Typography>
+			<Typography variant='body1'>
+				Последнее обновление базы данных: {getDate.timestampString}
+			</Typography>
+			<ValuteTable
+				currentValute={currentValute}
+				valuteArray={sortedValuteArray}
+				onClickFavoriteCell={onClickFavoriteCell}
+			/>
 		</div>
 	)
 }
