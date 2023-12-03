@@ -40,6 +40,12 @@ export const valuteSlice = createSlice({
 					(valute.Favorite = !valute.Favorite)
 			)
 		},
+		setData: (
+			state,
+			{ payload }: PayloadAction<IValuteScheme<IValute[]>>
+		) => {
+			state.valuteData = payload
+		},
 	},
 	extraReducers: builder => {
 		builder
@@ -67,6 +73,6 @@ export const valuteSlice = createSlice({
 	},
 })
 
-export const { setCurrentValute, setFavoriteValute } = valuteSlice.actions
+export const { setCurrentValute, setFavoriteValute, setData } = valuteSlice.actions
 
 export const valuteReducer = valuteSlice.reducer
